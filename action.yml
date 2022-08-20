@@ -49,7 +49,7 @@ runs:
         CUMULUSCI_SERVICE_github: '{"username": "${{ github.actor }}", "token": "${{ github.token }}", "email": "cci@github.actions" }'
         CUMULUSCI_SERVICE_metadeploy: ${{ inputs.cumulusci-service-metadeploy }}
       run: |
-        cci task run metadeploy_publish --tag ${{ inputs.tag }}
+        cci task run metadeploy_publish --tag ${{ inputs.tag }} \
           `[ "${{ inputs.dry-run }}" == "true" ] && echo '--dry-run'` \
           `[ "${{ inputs.publish }}" == "true" ] && echo '--publish'` \
           `[ "${{ inputs.plan }}" != "" ] && echo '--plan ${{ inputs.plan }}'` \
