@@ -9,6 +9,7 @@ inputs:
     required: false
   cumulusci-service-metadeploy:
     description: "The metadeploy service definition for CumulusCI stored in secrets"
+    required: true
   tag:
     description: "The tag to publish"
     required: true
