@@ -52,7 +52,7 @@ runs:
         cci task run metadeploy_publish --tag ${{ inputs.tag }}
           `[ "${{ inputs.dry-run }}" == "true" ] && echo '--dry-run'` \
           `[ "${{ inputs.publish }}" == "true" ] && echo '--publish'` \
-          `[ "${{ inputs.plan }}" == "" ] && echo '--plan ${{ inputs.plans }}'` \
+          `[ "${{ inputs.plan }}" != "" ] && echo '--plan ${{ inputs.plan }}'` \
           | tee cumulusci-task.log
       shell: bash
     - name: Set Commit Status
