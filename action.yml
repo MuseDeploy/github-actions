@@ -1,0 +1,71 @@
+name: MetaDeploy Publish
+description: 'Run the metadeploy_publish task'
+inputs:
+  cumulusci-version:
+    description: 'version of CumulusCI to install'
+    required: false
+  sfdx-version:
+    description: 'version of SFDX to install'
+    required: false
+  cumulusci-service-metadeploy:
+    description: "The metadeploy service definition for CumulusCI stored in secrets"
+  tag:
+    description: "The tag to deploy"
+    required: true
+  plan:
+    description: "Specify specific plan(s) to publish.  By default, all plans will be published"
+    required: false
+  dry-run:
+    description: 'Name of the scratch org or persistent org config to use'
+    required: false
+    default: false
+  publish:
+    description: 'Name of the Cumulus flow to execute'
+    required: false
+    default: true
+  commit-status-name:
+    description: 'Name of an optional extra commit status to set from build results'
+    required: false
+    default: 
+  commit-status-regex:
+    description: 'Regex to apply to flow log to locate commit status value'
+    required: false
+    default:
+  commit-status-description-prefix:
+    description: 'Value to prefix before regex result in commit status value'
+    required: false
+    default:
+runs:
+    using: "composite"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set Up CumulusCI
+        uses: cumulus-actions/setup-cumulus@v1
+        with:
+          cumulusci-version: '${{ inputs.cumulusci-version }}'
+          sfdx-version: '${{ inputs.sfdx-version }}'
+      - name: Run Task
+        env:
+          CUMULUSCI_SERVICE_github: '{"username": "${{ github.actor }}", "token": "${{ github.token }}", "email": "cci@github.actions" }'
+          CUMULUSCI_SERVICE_metadeploy: ${{ inputs.cumulusci-service-metadeploy }}
+        run: |
+          cci task run metadeploy_publish --tag ${{ inputs.tag }}
+            `[ "${{ inputs.dry-run }}" == "true" ] && echo '--dry-run'` \
+            `[ "${{ inputs.publish }}" == "true" ] && echo '--publish'` \
+            `[ "${{ inputs.plan }}" == "" ] && echo '--plan ${{ inputs.plans }}'` \
+            | tee cumulusci-task.log
+        shell: bash
+      - name: Set Commit Status
+        if: ${{ inputs.commit-status-regex && inputs.commit-status-name }}
+        env:
+          GITHUB_TOKEN: '${{ github.token }}'
+        run: |
+          STATUS=$(cat cumulusci-task.log | grep -o '${{ inputs.commit-status-regex }}')
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            '/repos/${{ github.repository }}/statuses/${{ github.sha }}' \
+            -f state='success' \
+            -f description="${{ inputs.commit-status-description-prefix }}$STATUS" \
+            -f context='${{ inputs.commit-status-name }}'
+        shell: bash
