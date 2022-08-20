@@ -51,8 +51,8 @@ runs:
         CUMULUSCI_SERVICE_metadeploy: "${{ inputs.cumulusci-service-metadeploy }}"
       run: |
         cci task run metadeploy_publish --tag ${{ inputs.tag }} \
-          `[ "${{ inputs.dry-run }}" == "true" ] && echo '--dry-run'` \
-          `[ "${{ inputs.publish }}" == "true" ] && echo '--publish'` \
+          `[ "${{ inputs.dry-run }}" == "true" ] && echo '--dry-run True'` \
+          `[ "${{ inputs.publish }}" == "true" ] && echo '--publish True'` \
           `[ "${{ inputs.plan }}" != "" ] && echo '--plan ${{ inputs.plan }}'` \
           | tee cumulusci-task.log
       shell: bash
